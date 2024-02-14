@@ -46,7 +46,7 @@
             border-inline-start: 1px solid black;
         }
         :is(input, select).uneven {
-            color: darkorange;
+            text-decoration: underline;
         }
         :is(input, select).hovered {
             background-color: yellow;
@@ -137,6 +137,18 @@
         }
         a {
             color: inherit;
+        }
+        table {
+            counter-reset: typo-index;
+        }
+        .element-name-cell::before {
+            content: "" counter(typo-index);
+            counter-increment: typo-index 1;
+            position: absolute;
+            right: 5px;
+        }
+        .element-name-cell input {
+            margin-inline-start: 20px;
         }
         @media print {
             /* input::placeholder {
