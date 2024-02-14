@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>אינדקס טיפוגרפי</title>
+    <style>
+        @font-face {
+            font-family: "NarkissBlock";
+            src: url( "NarkissBlock-Regular.woff2" ) format( "woff2" );
+        }
+        html, body {
+            height: 100%;
+            -webkit-font-smoothing: antialiased;
+            -moz-macosx-font-smoothing: grayscale;
+            margin: 0;
+        }
+        body, input, select {
+            font-family: "NarkissBlock", sans-serif;
+        }
+        input {
+            border: none;
+            font-size: inherit;
+            background: transparent;
+        }
+        input, select {
+            flex: 1;
+            width: 100%;
+        }
+        .wrap {
+            padding: 10px;
+            min-height: calc( 100vh - 100px );
+        }
+        table {
+            width: 100%;
+            position: relative;
+            border-collapse: collapse;
+            border-top: 3px solid black;
+        }
+        th, td {
+            position: relative;
+            padding: 5px;
+            border-bottom: 3px solid black;
+        }
+        tr :is( th:not(:first-child), td:not(:first-child) ) {
+            border-inline-start: 1px solid black;
+        }
+        :is(input, select).uneven {
+            color: darkorange;
+        }
+        :is(input, select).hovered {
+            background-color: yellow;
+        }
+        th:last-child {
+            border-inline-start: none !important;
+            border-bottom: none;
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        button {
+            width: 1.25rem; height: 1.25rem;
+            background-color: black;
+            border: 3px solid black;
+            color: white;
+            border-radius: 1.5rem;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+        button:hover,
+        button:focus {
+            background-color: white;
+            color: black;
+        }
+        input:is( [name="font_size"], [name="line_height"] ) {
+            text-align: center;
+        }
+        /* input:is( [name="letter_spacing"], [name="text_align"] ) {
+            display: block;
+            text-align: right;
+        } */
+        .element-work-cell > div {
+            display: flex;
+            margin: 0 0 5px 25px;
+            justify-content: space-between;
+        }
+        .element-work-cell > div > span {
+            display: flex;
+            flex: 1;
+        }
+        .delete-column, .delete-row {
+            position: absolute;
+            top: 5px; left: 5px;
+            opacity: 0;
+            visibility: hidden;
+        }
+        .copy-cell-button {
+            position: absolute;
+            top: 5px; left: 5px;
+            opacity: 0;
+            visibility: hidden;
+            font-size: .8em;
+        }
+        td.element-work-cell:nth-child(2) .copy-cell-button {
+            display: none;
+        }
+        td:is(:hover,:focus-within) > .copy-cell-button,
+        td:is(:hover,:focus-within) > .delete-row,
+        th:is(:hover,:focus-within) > .delete-column {
+            opacity: 1;
+            visibility: visible;
+        }
+        th {
+            text-align: start;
+        }
+        td {
+            vertical-align: top;
+        }
+        h1 {
+            margin: 0;
+            font-size: 1em;
+            font-weight: normal;
+            padding: 10px 0;
+        }
+        .control-column-head {
+            position: absolute;
+            left: 0; top: -35px;
+        }
+        footer {
+            padding: 10px;
+            margin-top: 2rem;
+            color: #888;
+            font-size: .75rem;
+        }
+        a {
+            color: inherit;
+        }
+        @media print {
+            /* input::placeholder {
+                color: transparent;
+            } */
+            input:placeholder-shown {
+                display: none;
+            }
+            button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+    <h1>אינדקס טיפוגרפי</h1>
+    <table>
+        <thead>
+        <tr>
+            <th class="element-column-head"></th>
+            <th class="control-column-head">
+                <button type="button" class="add-column-button" title="הוסף עבודה">+</button>
+            </th>
+        </th>
+        </thead>
+        <tbody>
+            <tr class="control-row">
+                <td>
+                    <button type="button" class="add-row-button" title="הוסף רכיב">+</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+
+    <footer>
+        © בצלאל, המחלקה לתקשורת חזותית. פונט באדיבות <a href="https://fontef.com/" target="_blank">פונטף</a>.
+    </footer>
+
+    <template id="column_head">
+        <th class="work-column-head">
+            <input type="text" placeholder="שם העבודה...">
+            <button type="button" class="delete-column" title="מחק עבודה">−</button>
+        </th>
+    </template>
+
+    <template id="element_row">
+        <tr class="element-row">
+            <td class="element-name-cell">
+                <input type="text" placeholder="שם הרכיב..." name="element_name">
+                <button type="button" class="delete-row" title="מחק רכיב">−</button>
+            </td>
+        </tr>
+    </template>
+
+    <template id="element_work_cell">
+        <td class="element-work-cell">
+            <button type="button" class="copy-cell-button" title="העתק מהעבודה הראשונה">➜</button>
+            <div class="character-properties">
+            <input type="text" placeholder="שם הפונט" title="שם הפונט" name="font_family">
+            <input type="text" placeholder="משקל/סגנון" title="משקל/סגנון" name="font_style">
+            <span dir="ltr">
+            <input type="text" placeholder="גודל" title="גודל פונט (בפוינט)" name="font_size" size="4"> /
+            <input type="text" placeholder="שורה" title="גובה שורה (בפוינט)" name="line_height"  size="4"></span>
+            <input type="text" placeholder="טראקינג" title="טראקינג" name="letter_spacing" dir="ltr">
+            </div>
+            <div class="paragraph-properties">
+                <select name="text_align" title="יישור טקסט">
+                    <option></option>
+                    <option value="right">ימין</option>
+                    <option value="center">מרכז</option>
+                    <option value="left">שמאל</option>
+                    <option value="justify_right">בלוק ימין</option>
+                    <option value="justify_center">בלוק מרכז</option>
+                    <option value="justify_left">בלוק שמאל</option>
+                    <option value="justify">בלוק</option>
+                </select>
+                <input type="text" placeholder="רוחב טור" title="רוחב טור" name="column_width">
+            </div>
+        </td>
+    </template>
+
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript">
+        const undoHistory = [];
+        const redoHistory = [];
+        function addRow() {
+            $( ".control-row" ).before( $( "#element_row" ).html() );
+            $( ".control-row" ).prev().find( ".element-name-cell" ).after( $( "#element_work_cell" ).html().repeat( $( ".work-column-head" ).length ) );
+            return $( ".control-row" ).prev().find( ".element-name-cell > input" );
+        }
+        function addColumn() {
+            $( ".control-column-head" ).before( $( "#column_head" ).html() );
+            $( ".element-row" ).each( function() {
+                $( this ).find( ".element-work-cell:last" ).after( $( "#element_work_cell" ).html() );
+            });
+            return $( ".control-column-head" ).prev().find( "input" );
+        }
+        function copyPreviousCell( $el ) {
+            $el.siblings( ".element-work-cell" ).first().find( "input, select" ).each( function() {
+                $el.find( `[name="${this.name}"]` ).val( this.value );
+            } );
+            markUnevens();
+            return $el;
+        }
+        function markUnevens() {
+            $( ".element-row" ).each( function() {
+                const row = this;
+                $( row ).find( ".element-work-cell:first" ).find( "input, select" ).each( function() {
+                    const inputs = $( row ).find( `[name="${this.name}"]` );
+                    if ( inputs.toArray().every( (el,idx,arr) => el.value === arr[0].value ) ) {
+                        inputs.removeClass( "uneven" );
+                    } else {
+                        inputs.addClass( "uneven" );
+                    }
+                } );
+            } );
+        }
+        function hoverAllOfSameName( e ) {
+            if ( !e.currentTarget.name ) return;
+            $( `[name="${e.currentTarget.name}"]` ).addClass( "hovered" );
+        }
+        function unhoverAll() {
+            $( "[name]" ).removeClass( "hovered" );
+        }
+        $( document ).on( "focus", ".element-work-cell [name]", hoverAllOfSameName );
+        $( document ).on( "blur", ".element-work-cell [name]", unhoverAll );
+        $( document ).on( "click", ".add-column-button", () => {
+            saveUndo();
+            addColumn();
+         } );
+        $( document ).on( "click", ".add-row-button", () => {
+            saveUndo();
+            addRow();
+        } );
+        $( document ).on( "click", ".copy-cell-button", e => {
+            saveUndo();
+            copyPreviousCell( $( e.currentTarget ).parents( ".element-work-cell" ) );
+        } );
+        $( document ).on( "click", ".delete-row", e => {
+            saveUndo();
+            $( e.currentTarget ).parents( "tr" ).remove();
+        } );
+        $( document ).on( "click", ".delete-column", e => {
+            const idx = $( e.currentTarget ).parents( "th" ).index();
+            saveUndo();
+            $( e.currentTarget ).parents( "th" ).remove();
+            $( `.element-row > :nth-child(${idx+1})` ).remove();
+        } );
+        $( document ).on( "keydown", ".element-work-cell:not(:nth-child(2)) input", e => {
+            if ( e.altKey && e.code === "KeyC" ) {
+                e.preventDefault();
+                saveUndo();
+                copyPreviousCell( $( e.currentTarget ).parents( ".element-work-cell" ) ).find( "input" ).get( 0 ).focus();
+            }
+        } );
+        $( document ).on( "keydown", "input[name='text_align']:last", e => {
+            if ( e.key === "Tab" ) {
+                e.preventDefault();
+                saveUndo();
+                addRow().get( 0 ).focus();
+            }
+        } );
+        $( document ).on( "focus", "input, select", e => {
+            e.currentTarget.oldValue = value;
+        } );
+        $( document ).on( "change", "input, select", e => {
+            if ( 'oldValue' in e.currentTarget ) {
+                const newValue = e.currentTarget.value;
+                e.currentTarget.value = e.currentTarget.oldValue;
+                saveUndo();
+                e.currentTarget.value = newValue;
+            }
+        } );
+        $( document ).on( "input", ".element-work-cell input, .element-work-cell select", markUnevens );
+        function createDataObject() {
+            const cols = [], rows = [], cells = [];
+            $( ".work-column-head input" ).each( function() { cols.push( this.value ); } );
+            $( ".element-name-cell input" ).each( function() { rows.push( this.value ); } );
+            $( ".element-work-cell" ).each( function() {
+                cells.push( $( this ).find( "input, select" ).serializeArray() );
+            } );
+            return {
+                cols: cols,
+                rows: rows,
+                cells: cells
+            };
+        }
+        function saveUndo() {
+            redoHistory.splice( 0 );
+            if ( undoHistory.length > 100 ) {
+                undoHistory.shift();
+            }
+            undoHistory.push( createDataObject() );
+        }
+        function saveData() {
+            localStorage.typoData = JSON.stringify( createDataObject() );
+            localStorage.typoUndoData = JSON.stringify( undoHistory );
+        }
+        function resetTable() {
+            $( ".element-row" ).remove();
+            $( ".work-column-head" ).remove();
+        }
+        function renderDataObject( data ) {
+            resetTable();
+            data.cols.forEach( col => {
+                addColumn().val( col );
+            } );
+            data.rows.forEach( row => {
+                addRow().val( row );
+            } );
+            data.cells.forEach( ( cell, idx ) => {
+                const el = $( `.element-work-cell:eq(${idx})` );
+                cell.forEach( inp => {
+                    $( el ).find( `[name="${inp.name}"]` ).val( inp.value );
+                } );
+            } );
+        }
+        function doUndo() {
+            if ( !undoHistory.length ) return;
+            redoHistory.push( createDataObject() )
+            renderDataObject( undoHistory.pop() );
+        }
+        function doRedo() {
+            if ( !redoHistory.length ) return;
+            undoHistory.push( createDataObject() );
+            renderDataObject( redoHistory.pop() )
+        }
+        function loadData() {
+            if ( ! 'typoData' in localStorage ) return;
+            renderDataObject( JSON.parse( localStorage.typoData ) );
+            if ( 'typoUndoData' in localStorage ) {
+                undoHistory.push( ...JSON.parse( localStorage.typoUndoData ) );
+            }
+        }
+        loadData();
+        markUnevens();
+        $( window ).on( "keydown", e => {
+            console.log( undoHistory );
+            if ( [ "INPUT", "SELECT" ].includes( document.activeElement.tagName ) ) return;
+            if ( ( e.metaKey && e.shiftKey && e.code === "KeyZ" ) || ( e.ctrlKey && e.shiftKey && e.code === "KeyZ" ) ) {
+                e.preventDefault();
+                doRedo();
+            } else if ( ( e.metaKey && e.code === "KeyZ" ) || ( e.ctrlKey && e.code === "KeyZ" ) ) {
+                e.preventDefault();
+                doUndo();
+            }
+        } );
+        $( window ).on( "beforeunload", saveData );
+    </script>
+
+</body>
+</html>
