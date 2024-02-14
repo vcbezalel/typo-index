@@ -175,6 +175,7 @@
 
     <footer>
         © בצלאל, המחלקה לתקשורת חזותית. פונט באדיבות <a href="https://fontef.com/" target="_blank">פונטף</a>.
+        <a href="#" onclick="exportCSV(); return false;">אקספורט</a>
     </footer>
 
     <template id="column_head">
@@ -326,6 +327,35 @@
                 cells: cells
             };
         }
+        function createTableForCSV() {
+            const headRow = $( ".work-column-head input" ).map( function() {
+                    return this.value;
+                } ).get();
+            headRow.unshift( "" );
+            const rows = [ headRow ];
+            rows.push ( ...$( ".element-row" ).map( function() {
+                const row = [ $( this ).find( "[name='element_name']" ).val() ];
+                row.push( ...$( this ).find( ".element-work-cell" ).map( function() {
+                    return $( this ).find( "[name]" ).map( function() {
+                        return this.value;
+                    } ).filter( function() { return this != ""; } ).get().join( ", " );
+                } ).get() );
+                return [ row ];
+            } ).get() );
+            return rows;
+        }
+        function exportCSV() {
+            let csv = "";
+            createTableForCSV().forEach( row => {
+                csv += row.map( str => '"' + str.replace( '"', '""' ) + '"' ).join( "," ) + "\r\n";
+            } );
+            const blob = new Blob( [ csv ], { type: "text/csv" } );
+            const url = URL.createObjectURL( blob );
+            const a = document.createElement( "A" );
+            a.href = url;
+            a.setAttribute( "download", "typo-index.csv" );
+            a.click();
+        }
         function saveUndo() {
             redoHistory.splice( 0 );
             if ( undoHistory.length > 100 ) {
@@ -376,7 +406,6 @@
         loadData();
         markUnevens();
         $( window ).on( "keydown", e => {
-            console.log( undoHistory );
             if ( [ "INPUT", "SELECT" ].includes( document.activeElement.tagName ) ) return;
             if ( ( e.metaKey && e.shiftKey && e.code === "KeyZ" ) || ( e.ctrlKey && e.shiftKey && e.code === "KeyZ" ) ) {
                 e.preventDefault();
