@@ -367,7 +367,7 @@
             renderDataObject( redoHistory.pop() )
         }
         function loadData() {
-            if ( ! 'typoData' in localStorage ) return;
+            if ( ! ('typoData' in localStorage) ) return;
             renderDataObject( JSON.parse( localStorage.typoData ) );
             if ( 'typoUndoData' in localStorage ) {
                 undoHistory.push( ...JSON.parse( localStorage.typoUndoData ) );
